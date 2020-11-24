@@ -24,7 +24,7 @@ type Name struct {
 	Lastname  string `json: "lastname"`
 }
 
-var students []Student
+var students map[string]Student
 
 func getStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
