@@ -13,7 +13,7 @@ import (
 
 //Student Model
 type Student struct {
-	//ID      string `json: "id`
+	ID      string `json: "id`
 	Class   string `json: "class"`
 	Section string `json: "section"`
 	Name    *Name  `json: "name"`
@@ -56,12 +56,12 @@ func getStudent(w http.ResponseWriter, r *http.Request) {
 func createStudent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "appication/json")
 	b, err := ioutil.ReadAll(r.Body)
-	var student Student
-	error := json.Unmarshal(b, &student)
-	if error != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	if b == nil {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	var student Student
+	err = json.Unmarshal(b, &student)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -70,38 +70,38 @@ func createStudent(w http.ResponseWriter, r *http.Request) {
 
 	students[id] = student
 
-	dataNew, err1 := json.MarshalIndent(students, "", " ")
+	b, err1 := json.MarshalIndent(students, "", " ")
 	if err1 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Write(dataNew)
+	w.Write(b)
 }
 
 func updateStudent(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	recID := mux.Vars(r)["id"]
-	bData, err := ioutil.ReadAll(r.Body)
+	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	var student Student
-	error := json.Unmarshal(bData, &student)
+	error := json.Unmarshal(b, &student)
 	if error != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	students[recID] = student
 
-	dataNew, errMarshal := json.Marshal(students)
-	if errMarshal != nil {
+	b, err = json.Marshal(students)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	w.Write(dataNew)
+	w.Write(b)
 }
 
 func deleteStudent(w http.ResponseWriter, r *http.Request) {
@@ -124,9 +124,9 @@ func main() {
 
 	students = make(map[string]Student)
 
-	students["1"] = Student{Class: "10th", Section: "A", Name: &Name{Firstname: "Akash", Lastname: "Ghate"}}
-	students["2"] = Student{Class: "10th", Section: "A", Name: &Name{Firstname: "Nik", Lastname: "Irving"}}
-	students["3"] = Student{Class: "10th", Section: "B", Name: &Name{Firstname: "Josh", Lastname: "Gates"}}
+	students["1"] = Student{ID: "1", Class: "10th", Section: "A", Name: &Name{Firstname: "Akash", Lastname: "Ghate"}}
+	students["2"] = Student{ID: "2", Class: "10th", Section: "A", Name: &Name{Firstname: "Nik", Lastname: "Irving"}}
+	students["3"] = Student{ID: "3", Class: "10th", Section: "B", Name: &Name{Firstname: "Josh", Lastname: "Gates"}}
 
 	router.HandleFunc("/api/students", getStudents).Methods("GET")
 	router.HandleFunc("/api/student/{id}", getStudent).Methods("GET")
