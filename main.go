@@ -12,7 +12,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
-	"github.com/practice_methods/student_project/student"
+	"github.com/shreyash170295/Test/student"
 )
 
 var students map[string]student.Student
