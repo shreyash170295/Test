@@ -2,41 +2,34 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/mux"
+	"github.com/practice_methods/student_project/student"
 )
 
-//Student Model
-type Student struct {
-	ID      string `json: "id`
-	Class   string `json: "class"`
-	Section string `json: "section"`
-	Name    *Name  `json: "name"`
-}
-
-//Name model
-type Name struct {
-	Firstname string `json: "firstname"`
-	Lastname  string `json: "lastname"`
-}
-
-var students map[string]Student
+var students map[string]student.Student
 
 func getStudents(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	b, err := json.MarshalIndent(students, "", " ")
-	if b == nil {
-		w.WriteHeader(http.StatusBadRequest)
+	var allStudents student.AllStudents
+	allStudents.Students = []*student.Student{}
+	for _, s := range students {
+		allStudents.Students = append(allStudents.Students, &s)
 	}
+	b, err := proto.Marshal(&allStudents)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	fmt.Println(string(b))
 	w.Write(b)
 }
 
@@ -75,14 +68,14 @@ func createStudent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var student Student
+	var student student.Student
 	err = json.Unmarshal(b, &student)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	id := strconv.Itoa(rand.Intn(2000))
-	student.ID = id
+	student.Id = id
 	students[id] = student
 
 	b, err = json.MarshalIndent(students[id], "", " ")
@@ -112,7 +105,7 @@ func updateStudent(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var student Student
+	var student student.Student
 	err = json.Unmarshal(b, &student)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -155,13 +148,15 @@ func deleteStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	router := mux.NewRouter()
 
-	students = make(map[string]Student)
+	students = make(map[string]student.Student)
 
-	students["1"] = Student{ID: "1", Class: "10th", Section: "A", Name: &Name{Firstname: "Akash", Lastname: "Ghate"}}
-	students["2"] = Student{ID: "2", Class: "10th", Section: "A", Name: &Name{Firstname: "Nik", Lastname: "Irving"}}
-	students["3"] = Student{ID: "3", Class: "10th", Section: "B", Name: &Name{Firstname: "Josh", Lastname: "Gates"}}
+	students["1"] = student.Student{Id: "1", Class: "10th", Section: "A", Name: &student.Name{Firstname: "Akash", Lastname: "Ghate"}}
+	students["2"] = student.Student{Id: "2", Class: "10th", Section: "A", Name: &student.Name{Firstname: "Nik", Lastname: "Irving"}}
+	students["3"] = student.Student{Id: "3", Class: "10th", Section: "B", Name: &student.Name{Firstname: "Josh", Lastname: "Gates"}}
 
 	router.HandleFunc("/api/students", getStudents).Methods("GET").Name("GetAllStudents")
 	router.HandleFunc("/api/students/{id}", getStudent).Methods("GET").Name("GetStudentByID")

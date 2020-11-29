@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package student;
+
+option go_package = "student";
+
+message Name {
+    string firstname = 1;
+    string lastname = 2;
+}
+
+message Student {
+    string id = 1;
+    string class = 2;
+    string section = 3;
+    Name name = 4;
+}
+
+message AllStudents{
+    repeated Student students = 1;
+}
+
+
